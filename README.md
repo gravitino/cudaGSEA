@@ -1,14 +1,3 @@
----
-title: "cudGSEA"
-author: "Christian Hundt"
-date: "2016-12-20"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{cudaGSEA}
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
----
-
 # cudaGSEA
 
 cudaGSEA is a package for the efficient parallelization of Gene Set Enrichment
@@ -206,7 +195,7 @@ Seminumerical Algorithms, 3rd edn., p. 232. Boston: Addison-Wesley.)
 - overkill_signal2noise
 - overkill_t_test
 
-## Hacking
+## Extending the code
 
 All topics in this section cover source code related issues i.e. you have to
 alter the source code and reinstall the package!
