@@ -57,7 +57,7 @@ environment variables:
 
 1. export CUDA_HOME=/path/to/cuda-7.5 (directory of bin/nvcc)
 
-2. export R_INC=/path/to/R/include (directory where R.hpp is locate)
+2. export R_INC=/path/to/R/include (directory where R.hpp is located)
 
 3. export  RCPP_INC=/path/to/R/site-library/Rcpp/include (Rcpp.h)
 
