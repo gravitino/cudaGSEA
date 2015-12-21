@@ -195,7 +195,7 @@ Seminumerical Algorithms, 3rd edn., p. 232. Boston: Addison-Wesley.)
 - overkill_signal2noise
 - overkill_t_test
 
-## Hacking
+## Extending the code
 
 All topics in this section cover source code related issues i.e. you have to
 alter the source code and reinstall the package!
