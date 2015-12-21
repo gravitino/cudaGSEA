@@ -1,14 +1,3 @@
----
-title: "cudGSEA"
-author: "Christian Hundt"
-date: "2016-12-20"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{cudaGSEA}
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
----
-
 # cudaGSEA
 
 cudaGSEA is a package for the efficient parallelization of Gene Set Enrichment
