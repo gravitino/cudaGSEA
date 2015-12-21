@@ -4,6 +4,18 @@ cudaGSEA is a package for the efficient parallelization of Gene Set Enrichment
 Analysis (GSEA) using commonly used CUDA-enabled accelerators such as GPUs
 from the NVIDIA Geforce or NVIDIA Tesla series.
 
+## For the impatient
+
+```
+cd /tmp
+git clone git@github.com:gravitino/cudaGSEA.git # clone this repository
+cd cudaGSEA                                   
+sudo R CMD INSTALL cudaGSEA_1.0.0.tar.gz        # install the library
+Rscript example.R                               # run the example 
+python /tools/reader.py output_50_1024_32.es    # optional: inspect all scores
+
+```
+
 ## Installation from source
 
 cudaGSEA depends on CUDA. Thus, you should at least be able to call the nvcc
