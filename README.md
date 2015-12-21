@@ -13,7 +13,7 @@ git clone git@github.com:gravitino/cudaGSEA.git # clone this repository
 cd cudaGSEA                                   
 sudo R CMD INSTALL cudaGSEA_1.0.0.tar.gz        # install the library
 Rscript example.R                               # run the example 
-python tools/reader.py output_50_1024_32.es    # optional: inspect all scores
+python tools/reader.py output_50_1024_32.es     # optional: inspect all scores
 
 ```
 The exemplary python visualizer needs numpy and matplotlib. However, you can use 
