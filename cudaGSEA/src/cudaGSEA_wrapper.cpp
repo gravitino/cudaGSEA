@@ -229,7 +229,7 @@ RcppExport SEXP GSEA(SEXP exprsData,
         if (double_precision) {
 
             auto exprs = Rcpp::as<std::vector<double>>(exprs_table);
-            auto result = gsea_double_proxy(exprs, rownames, colnames, labels, pnames, gene_sets, metric_string, num_permutations, true, false, "");
+            auto result = gsea_double_proxy(exprs, rownames, colnames, labels, pnames, gene_sets, metric_string, num_permutations, true, false, Rcpp::as<std::string>(dumpFilename));
 
             Rcpp::NumericVector   ES(result.begin()+0*num_paths,
                                      result.begin()+1*num_paths);
@@ -251,7 +251,7 @@ RcppExport SEXP GSEA(SEXP exprsData,
         } else {
 
             auto exprs = Rcpp::as<std::vector<float>>(exprs_table);
-            auto result = gsea_single_proxy(exprs, rownames, colnames, labels, pnames, gene_sets, metric_string, num_permutations, true, false, "");
+            auto result = gsea_single_proxy(exprs, rownames, colnames, labels, pnames, gene_sets, metric_string, num_permutations, true, false, Rcpp::as<std::string>(dumpFilename));
 
             Rcpp::NumericVector   ES(result.begin()+0*num_paths,
                                      result.begin()+1*num_paths);
