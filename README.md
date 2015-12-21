@@ -1,7 +1,7 @@
 # cudaGSEA
 
 cudaGSEA is a package for the efficient parallelization of Gene Set Enrichment
-Analysis (GSEA) using commonly used CUDA-enabled accelerators such as GPUs
+Analysis (GSEA) using commonly available CUDA-enabled accelerators such as GPUs
 from the NVIDIA Geforce or NVIDIA Tesla series.
 
 ## Quick guide
