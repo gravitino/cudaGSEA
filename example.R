@@ -13,7 +13,7 @@ getCudaDevice()
 # configure GSEA
 nperm <- 1024                                # number of permutations
 metric <- "onepass_signal2noise"             # metric string see README.md
-dump <- ""                                   # if not empty path to binary dump
+dump <- "output"                             # if not empty path to binary dump
 checkInput <-TRUE                            # check first three inputs or not
 doublePrecision <-FALSE                      # compute in single or double prec.
 
