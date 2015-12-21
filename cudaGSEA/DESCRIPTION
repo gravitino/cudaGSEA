@@ -1,0 +1,15 @@
+Package: cudaGSEA
+Type: Package
+Title: CUDA-accelerated Gene Set Enrichment Analysis
+Version: 1.0.0
+Date: 2015-11-11
+Author: Christian Hundt, Bertil Schmidt, Andreas Hildebrandt
+Maintainer: Christian Hundt <hundt@uni-mainz.de>
+Depends: R (>= 3.2), Rcpp (>= 0.10)
+Description: This package provides an R interface for CUDA-accelerated Gene
+    Set Enrichment Anaylisis using permutation test-based p-value estimation
+License: GPL-3
+biocViews: Software
+Suggests: knitr
+VignetteBuilder: knitr
+SystemRequirements: GNU make

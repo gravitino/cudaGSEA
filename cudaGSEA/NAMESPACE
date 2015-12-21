@@ -1,0 +1,11 @@
+import(Rcpp)
+
+useDynLib(cudaGSEA)
+
+export(loadLabelsFromCLS,
+       loadGeneSetsFromGMT,
+       loadExpressionDataFromGCT,
+       listCudaDevices,
+       getCudaDevice,
+       setCudaDevice,
+       GSEA)

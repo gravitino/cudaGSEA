@@ -1,0 +1,13 @@
+INFO: Please, use cudaGSEA as follows:
+INFO: Note, flags in square brackets [...] are optional. Entities in angle
+INFO: brackets <...> denote the default settings when flag not specified.
+INFO:
+INFO: cudaGSEA -res /path/to/collapsed/gene/expression/file.gct               \
+               -cls /path/to/class/label/assignment/file.cls                  \
+               -gmx /path/to/gene/set/collection/file                         \
+              [-nperm number_of_permutations (positive integer <16384>)]      \
+              [-metric metric_string (see README.md <onepass_signal2noise>)]  \
+              [-order order_predicate (ascending/descending <descending>)]    \
+              [-dump /path/to/binary/dump/file <no file dumped if left out>]  \
+              [-precision floating_point_precision (single/double <single>)]  \
+              [-gpu gpu_id (positive integer) <0>]
