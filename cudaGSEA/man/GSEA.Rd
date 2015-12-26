@@ -3,30 +3,33 @@
 \title{Perform a Gene Set Enrichment Analysis}
 
 \description{
-	This methods performs a Gene Set Enrichment Analysis according to the
-        method proposed by Subramanian et al. "Gene set enrichment analysis: 
-        A knowledge-based approach for interpreting genome-wide expression 
-        profiles" using CUDA-enabled accelerators.
+This methods performs a Gene Set Enrichment Analysis according to the
+method proposed by Subramanian et al. "Gene set enrichment analysis: 
+A knowledge-based approach for interpreting genome-wide expression 
+profiles" using CUDA-enabled accelerators.
 }
 
 \usage{
 GSEA(exprsData, labelList, geneSets, numPermutations, metricString, 
-     dumpFileName, checkInput, doublePrecision)
+    dumpFileName, checkInput, doublePrecision)
 }
 
 \arguments{
 \item{exprsData}{Data frame where rows enumerate gene symbols and columns
-                 identify patient names. The latter will not be used by 
-                 the GSEA algorithm. Use loadExpressionDataFromGCT in order
-                 to obtain an example.}
+    identify patient names. The latter will not be used by 
+    the GSEA algorithm. Use loadExpressionDataFromGCT in order
+    to obtain an example.
+}
 \item{labelList}{Binary vector consisting of zeros and ones that indicates
-                 the affiliation of each patient to one of the two pheno-
-                 types. Use loadLabelsFromCLS in order to obtain an example.}
+    the affiliation of each patient to one of the two phenotypes. 
+    Use loadLabelsFromCLS in order to obtain an example.
+}
 \item{geneSets}{A named list of gene sets each consisting of a vector of gene 
-                symbols. Use loadGeneSetsFromGMT in order to obtain an 
-                example.}
-\item{numPermutations}{Unsigned integer that specifies the number of permu-
-                       tations used during the permutation test.}
+    symbols. Use loadGeneSetsFromGMT in order to obtain an example.
+}
+\item{numPermutations}{Unsigned integer that specifies the number of 
+    permutations used during the permutation test.
+}
 \item{metricString}{String that specifies the used local metric. Choose from
 
 === one-pass mean rankings (fastest) ===
@@ -71,22 +74,26 @@ Seminumerical Algorithms, 3rd edn., p. 232. Boston: Addison-Wesley.)
 }
 
 \item{dumpFileName}{String that specifies the full path to binary dump of 
-                    either "float" or "double" floating point values. This
-                    argument is optional. An empty string configures GSEA
-                    to not dump the full enrichment score table.}
-
+    either "float" or "double" floating point values. This
+    argument is optional. An empty string configures GSEA
+    to not dump the full enrichment score table.
+}
 \item{checkInput}{Boolean that specifies if either the input of GSEA is
-                  checked for sanity or not. This argument is optional. 
-                  Leave this true (default) unless you really know what 
-                  you are doing!}
-
+    checked for sanity or not. This argument is optional. 
+    Leave this true (default) unless you really know what 
+    you are doing!
+}
 \item{doublePrecision}{Boolean that specifies if either single precision is 
-                       used (false) or double precision (true). This argument
-                       is optional (default: false) Please note, double
-                       precision may be executed on consumer GPUs such
-                       as the Geforce Titan X. However, Tesla GPUs usually 
-                       perform reasonably better in means of runtime.}
- 
+    used (false) or double precision (true). This argument
+    is optional (default: false) Please note, double
+    precision may be executed on consumer GPUs such
+    as the Geforce Titan X. However, Tesla GPUs usually 
+    perform reasonably better in means of runtime.
+}
+}
+
+\value{
+A data frame holding local and global statistics for each gene set.
 }
 
 \examples{
@@ -108,5 +115,5 @@ checkInput <-TRUE                    # check first three inputs or not
 doublePrecision <-FALSE              # compute in single or double prec.
 
 # GSEA(exprsData, labelList, geneSets, nperm, metric , 
-#       dump, checkInput, doublePrecision)
+#      dump, checkInput, doublePrecision)
 }

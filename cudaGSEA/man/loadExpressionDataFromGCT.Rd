@@ -17,6 +17,10 @@ loadExpressionDataFromGCT(gctFileName)
 \item{gctFileName}{Specifies the path to a *.gct file with a string.} 
 }
 
+\value{
+A data frame enumerating genes with rows and patients as columns.
+}
+
 \examples{
 # expressionData <- loadExpressionDataFromGCT("/path/to/expressions/file.gct")
 print("uncommend the line above if you have a gct file!")

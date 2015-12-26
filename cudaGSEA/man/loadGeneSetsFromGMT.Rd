@@ -17,6 +17,10 @@ loadGeneSetsFromGMT(gmtFileName)
 \item{gmtFileName}{Specifies the path to a *.gmt file with a string.} 
 }
 
+\value{
+A named list of vectors each consisting of gene symbols strings.
+}
+
 \examples{
     # geneSets <- loadGeneSetsFromGMT("/path/to/gene/sets/file.gmt")
     print("uncommend the line above if you have a gmt file!")

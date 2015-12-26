@@ -6,7 +6,7 @@
 This method loads a binary label vector encoding the phenotypes with
 zeros and ones from a *.cls file as defined by the Broad Institute
 of MIT and Harvard:
-        
+
 http://www.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats
 }
 
@@ -16,6 +16,10 @@ loadLabelsFromCLS(clsFileName)
 
 \arguments{
 \item{clsFileName}{Specifies the path to a *.cls file with a string.} 
+}
+
+\value{
+A binary vector denoting the phenotype affiliation.
 }
 
 \examples{
