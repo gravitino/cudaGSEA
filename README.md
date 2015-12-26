@@ -11,11 +11,11 @@ from the NVIDIA Geforce or NVIDIA Tesla series.
 Just clone the repository, install the library and run the example code.
 ```
 cd /tmp
-git clone git@github.com:gravitino/cudaGSEA.git # clone this repository
+git clone https://github.com/gravitino/cudaGSEA.git # clone this repository
 cd cudaGSEA                                   
-sudo R CMD INSTALL cudaGSEA_1.0.0.tar.gz        # install the library
-Rscript example.R                               # run the example 
-python tools/reader.py output_50_1024_32.es     # optional: inspect all scores
+sudo R CMD INSTALL cudaGSEA_1.0.0.tar.gz            # install the library
+Rscript example.R                                   # run the example 
+python tools/reader.py output_50_1024_32.es         # optional: inspect all scores
 
 ```
 The exemplary python visualizer needs numpy and matplotlib. However, you can use 
