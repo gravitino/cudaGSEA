@@ -63,6 +63,17 @@ environment variables:
 
 3. export  RCPP_INC=/path/to/R/site-library/Rcpp/include (Rcpp.h)
 
+### libcudart.so.7.5: cannot open shared object file: No such file or directory
+
+If you encounter problems with libcudart please make sure your operating system knows how to find it. As an example, this is how you fix this issue on Ubuntu:
+
+```
+sudo echo "/usr/local/cuda-7.5/targets/x86_64-linux/lib/"  >> \
+          /etc/ld.so.conf.d/cuda.conf # works on Ubuntu
+sudo ldconfig
+
+```
+
 ### It still does not work
 
 Do not hesitate to write me an email at hundt@uni-mainz.de
