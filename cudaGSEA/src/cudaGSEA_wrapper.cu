@@ -296,8 +296,8 @@ std::vector<enrch_t> gsea_proxy(std::vector<exprs_t>& exprs,
 
         // initialize space for the correlation matrix and correlate
         exprs_t * Correl = zeroGPU<exprs_t>(width_pi*num_genes);
-        correllate_genes(Exprs, Labels, Correl, num_genes, num_type_A,
-                         num_type_B, width_pi, metric, lower_pi);
+        correllate_genes_gpu(Exprs, Labels, Correl, num_genes, num_type_A,
+                             num_type_B, width_pi, metric, lower_pi);
 
         unsigned int * Index = zeroGPU<unsigned int>(num_genes*width_pi);
 

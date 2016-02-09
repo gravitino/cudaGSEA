@@ -1,24 +1,34 @@
 #ifndef CUDA_GSEA_CORRELATE_GENES
 #define CUDA_GSEA_CORRELATE_GENES
 
+#include <omp.h>                   // openMP
 #include <assert.h>                // checks
 #include "functors.cuh"            // functors
 #include "error_codes.cuh"         // error codes
 #include "cuda_helpers.cuh"        // timings
 #include "configuration.cuh"       // configuration
-#include "rngpu.hpp"               // curand alternative
+#include "rngpu/rngpu.hpp"         // lightweight curand alternative
 
-template <class label_t, class index_t, class value_t, class funct_t, 
-          unsigned int seed=42> __global__
-void correlate_gpu(value_t * table,       // expression data table (constin)
-                   label_t * labels,      // class labels for the two phenotypes
-                   value_t * correl,      // correlation of genes (output)
-                   index_t num_genes,     // number of genes
-                   index_t num_type_A,    // number of patients phenotype A
-                   index_t num_type_B,    // number of patients phenotype B
-                   index_t num_perms,     // number of permutations
-                   funct_t accum,         // accumulator functor
-                   index_t shift=0) {     // permutation shift 
+//////////////////////////////////////////////////////////////////////////////
+// correlate low-level primitives for CPU and GPU
+//////////////////////////////////////////////////////////////////////////////
+
+template <
+    class label_t,
+    class index_t,
+    class value_t,
+    class funct_t,
+    unsigned int seed=CUDA_GSEA_PERMUTATION_SEED> __global__
+void correlate_gpu(
+    value_t * table,       // expression data table (constin)
+    label_t * labels,      // class labels for the two phenotypes
+    value_t * correl,      // correlation of genes (output)
+    index_t num_genes,     // number of genes
+    index_t num_type_A,    // number of patients phenotype A
+    index_t num_type_B,    // number of patients phenotype B
+    index_t num_perms,     // number of permutations
+    funct_t accum,         // accumulator functor
+    index_t shift=0) {     // permutation shift
 
     // indices and helper variables
     const index_t lane = num_type_A + num_type_B;
@@ -39,38 +49,93 @@ void correlate_gpu(value_t * table,       // expression data table (constin)
         // the first thread shuffles the permutation except permutation 0
         if ((thid == 0) && (perm+shift)) {
 
-            // Fisher-Yates shuffle (carry and  add fast kiss rng)
+            // Fisher-Yates shuffle (carry and add fast kiss rng)
             auto state=get_initial_fast_kiss_state32(perm+shift+seed);
             fisher_yates_shuffle(fast_kiss32, &state, sigma, lane);
-        } 
+        }
         __syncthreads();
 
         // for each gene accumulate contribution over all patients
         for (index_t gene = thid; gene < num_genes; gene += blockDim.x)
-            correl[perm*num_genes+gene] = accum(sigma, 
-                                                table, 
-                                                lane, 
-                                                gene, 
-                                                num_genes, 
-                                                num_type_A, 
+            correl[perm*num_genes+gene] = accum(sigma,
+                                                table,
+                                                lane,
+                                                gene,
+                                                num_genes,
+                                                num_type_A,
                                                 num_type_B);
     }
 }
 
-template <class value_t, class label_t, class index_t, 
-          bool biased=true,     // use biased standard deviation if applicable
-          bool fixlow=true,     // adjust low standard deviation if applicable
-          bool transposed=true> // do not change this unless you know better
-void correllate_genes(value_t * Exprs,         // expression data  (constin)
-                      label_t * Labels,        // phenotype labels (constin)
-                      value_t * Correl,        // correlation of genes (output)
-                      index_t num_genes,       // number of genes
-                      index_t num_type_A,      // number patients phenotype A
-                      index_t num_type_B,      // number patients phenotype B
-                      index_t num_perms,       // number of permutations
-                      std::string metric,      // specify the used metric
-                      index_t shift=0,         // shift in permutations
-                      cudaStream_t stream=0) { // specified CUDA stream
+template <
+    class label_t,
+    class index_t,
+    class value_t,
+    class funct_t,
+    unsigned int seed=CUDA_GSEA_PERMUTATION_SEED> __global__
+void correlate_cpu(
+    value_t * table,       // expression data table (constin)
+    label_t * labels,      // class labels for the two phenotypes
+    value_t * correl,      // correlation of genes (output)
+    index_t num_genes,     // number of genes
+    index_t num_type_A,    // number of patients phenotype A
+    index_t num_type_B,    // number of patients phenotype B
+    index_t num_perms,     // number of permutations
+    funct_t accum,         // accumulator functor
+    index_t shift=0) {     // permutation shift
+
+    // indices and helper variables
+    const index_t lane = num_type_A + num_type_B;
+
+    // for each permutation
+    # pragma omp parallel for
+    for (index_t perm = 0; perm < num_perms; perm++) {
+
+        // copy label vector
+        std::vector<label_t> sigma(lane);
+        for (index_t patient = 0; patient < lane; patient++)
+            sigma[patient] = labels[patient];
+
+        // create permutation
+        if (perm+shift > 0) {
+            auto state=get_initial_fast_kiss_state32(perm+shift+seed);
+            fisher_yates_shuffle(fast_kiss32, &state, sigma.data(), lane);
+        }
+
+        // for each gene accumulate contribution over all patients
+        for (index_t gene = 0; gene < num_genes; gene++)
+            correl[perm*num_genes+gene] = accum(sigma.data(),
+                                                table,
+                                                lane,
+                                                gene,
+                                                num_genes,
+                                                num_type_A,
+                                                num_type_B);
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// correlate high-level primitives for CPU and GPU
+//////////////////////////////////////////////////////////////////////////////
+
+template <
+    class value_t,
+    class label_t,
+    class index_t,
+    bool biased=true,     // use biased standard deviation if applicable
+    bool fixlow=true,     // adjust low standard deviation if applicable
+    bool transposed=true> // do not change this unless you know better
+void correllate_genes_gpu(
+    value_t * Exprs,         // expression data  (constin)
+    label_t * Labels,        // phenotype labels (constin)
+    value_t * Correl,        // correlation of genes (output)
+    index_t num_genes,       // number of genes
+    index_t num_type_A,      // number patients phenotype A
+    index_t num_type_B,      // number patients phenotype B
+    index_t num_perms,       // number of permutations
+    std::string metric,      // specify the used metric
+    index_t shift=0,         // shift in permutations
+    cudaStream_t stream=0) { // specified CUDA stream
 
     #ifdef CUDA_GSEA_PRINT_TIMINGS
     TIMERSTART(device_correlate_genes)
@@ -79,11 +144,11 @@ void correllate_genes(value_t * Exprs,         // expression data  (constin)
     #ifdef CUDA_GSEA_PRINT_VERBOSE
     std::cout << "STATUS: Correlating " << num_genes << " unique gene symbols "
               << "for " << num_type_A << " patients" << std::endl
-              << "STATUS: with phenotype 0 and " << num_type_B 
+              << "STATUS: with phenotype 0 and " << num_type_B
               << " patients with phenotype 1" << std::endl
               << "STATUS: over " << num_perms
               << " permutations (shift=" << shift << ") " << std::endl
-              << "STATUS: using " << metric << " as ranking metric on the GPU." 
+              << "STATUS: using " << metric << " as ranking metric on the GPU."
               << std::endl;
     #endif
 
