@@ -1,12 +1,12 @@
 #ifndef CUDA_GSEA_CORRELATE_GENES
 #define CUDA_GSEA_CORRELATE_GENES
 
-#include <curand_kernel.h>         // device api calls to curand
 #include <assert.h>                // checks
 #include "functors.cuh"            // functors
 #include "error_codes.cuh"         // error codes
 #include "cuda_helpers.cuh"        // timings
 #include "configuration.cuh"       // configuration
+#include "rngpu.hpp"               // curand alternative
 
 template <class label_t, class index_t, class value_t, class funct_t, 
           unsigned int seed=42> __global__
@@ -39,15 +39,9 @@ void correlate_gpu(value_t * table,       // expression data table (constin)
         // the first thread shuffles the permutation except permutation 0
         if ((thid == 0) && (perm+shift)) {
 
-            // Fisher-Yates shuffle
-            curandState state;
-            curand_init(perm+shift, seed, 0, &state);
-            for (index_t id = lane-1; id > 0; id--) {
-                const index_t si = curand(&state) % id;
-                const value_t temporary = sigma[id]; 
-                sigma[id] = sigma[si]; 
-                sigma[si] = temporary;
-            }
+            // Fisher-Yates shuffle (carry and  add fast kiss rng)
+            auto state=get_initial_fast_kiss_state32(perm+shift+seed);
+            fisher_yates_shuffle(fast_kiss32, &state, sigma, lane);
         } 
         __syncthreads();
 
