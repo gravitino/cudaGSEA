@@ -1,7 +1,7 @@
 Package: cudaGSEA
 Type: Package
 Title: CUDA-accelerated Gene Set Enrichment Analysis
-Version: 1.0.0
+Version: 0.99.0
 Date: 2015-11-11
 Author: Christian Hundt, Bertil Schmidt, Andreas Hildebrandt
 Maintainer: Christian Hundt <hundt@uni-mainz.de>

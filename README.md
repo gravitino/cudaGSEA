@@ -4,16 +4,18 @@ cudaGSEA is a package for the efficient parallelization of Gene Set Enrichment
 Analysis (GSEA) using commonly available CUDA-enabled accelerators such as GPUs
 from the NVIDIA Geforce or NVIDIA Tesla series.
 
+<img src="https://raw.githubusercontent.com/gravitino/cudaGSEA/master/images/two_tailed_test.png">
+
 ## Quick guide
 
 Just clone the repository, install the library and run the example code.
 ```
 cd /tmp
-git clone git@github.com:gravitino/cudaGSEA.git # clone this repository
+git clone https://github.com/gravitino/cudaGSEA.git # clone this repository
 cd cudaGSEA                                   
-sudo R CMD INSTALL cudaGSEA_1.0.0.tar.gz        # install the library
-Rscript example.R                               # run the example 
-python tools/reader.py output_50_1024_32.es     # optional: inspect all scores
+sudo R CMD INSTALL cudaGSEA_1.0.0.tar.gz            # install the library
+Rscript example.R                                   # run the example 
+python tools/reader.py output_50_1024_32.es         # optional: inspect all scores
 
 ```
 The exemplary python visualizer needs numpy and matplotlib. However, you can use 
@@ -60,6 +62,17 @@ environment variables:
 2. export R_INC=/path/to/R/include (directory where R.hpp is located)
 
 3. export  RCPP_INC=/path/to/R/site-library/Rcpp/include (Rcpp.h)
+
+### libcudart.so.7.5: cannot open shared object file: No such file or directory
+
+If you encounter problems with libcudart please make sure your operating system knows how to find it. As an example, this is how you fix this issue on Ubuntu:
+
+```
+sudo echo "/usr/local/cuda-7.5/targets/x86_64-linux/lib/"  >> \
+          /etc/ld.so.conf.d/cuda.conf # works on Ubuntu
+sudo ldconfig
+
+```
 
 ### It still does not work
 

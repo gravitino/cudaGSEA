@@ -4,16 +4,34 @@ author: "Christian Hundt"
 date: "2016-12-20"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{cudaGSEA}
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+    %\VignetteIndexEntry{cudaGSEA}
+    %\VignetteEngine{knitr::rmarkdown}
+    \usepackage[utf8]{inputenc}
 ---
 
 # cudaGSEA
 
 cudaGSEA is a package for the efficient parallelization of Gene Set Enrichment
-Analysis (GSEA) using commonly used CUDA-enabled accelerators such as GPUs
+Analysis (GSEA) using commonly available CUDA-enabled accelerators such as GPUs
 from the NVIDIA Geforce or NVIDIA Tesla series.
+
+## Quick guide
+
+Just clone the repository, install the library and run the example code.
+
+```
+cd /tmp
+git clone https://github.com/gravitino/cudaGSEA.git # clone this repository
+cd cudaGSEA                                   
+sudo R CMD INSTALL cudaGSEA_1.0.0.tar.gz            # install the library
+Rscript example.R                                   # run the example 
+python tools/reader.py output_50_1024_32.es         # optional: inspect scores
+
+```
+
+The exemplary python visualizer needs numpy and matplotlib. However, you can 
+use any other programming language since the output file is a simply binary 
+dump of floating point values.
 
 ## Installation from source
 
@@ -52,9 +70,21 @@ environment variables:
 
 1. export CUDA_HOME=/path/to/cuda-7.5 (directory of bin/nvcc)
 
-2. export R_INC=/path/to/R/include (directory where R.hpp is locate)
+2. export R_INC=/path/to/R/include (directory where R.hpp is located)
 
 3. export  RCPP_INC=/path/to/R/site-library/Rcpp/include (Rcpp.h)
+
+### libcudart.so.7.5: cannot open shared object file: No such file or directory
+
+If you encounter problems with libcudart please make sure your operating system 
+knows how to find it. As an example, this is how you fix this issue on Ubuntu:
+
+```
+sudo echo "/usr/local/cuda-7.5/targets/x86_64-linux/lib/"  >> \
+    /etc/ld.so.conf.d/cuda.conf # works on Ubuntu
+sudo ldconfig
+
+```
 
 ### It still does not work
 
@@ -100,7 +130,7 @@ The GSEA method takes five default arguments and three optional arguments
 
 ```
 GSEA <- function(exprsData, labelList, geneSets, numPermutations, metricString,
-                 dumpFileName="", checkInput=TRUE, doublePrecision=FALSE) {...}
+    dumpFileName="", checkInput=TRUE, doublePrecision=FALSE) {...}
 
 ```
 
@@ -153,8 +183,8 @@ dump <- ""                                   # if not empty path to binary dump
 checkInput <-TRUE                            # check first three inputs or not
 doublePrecision <-FALSE                      # compute in single or double prec.
 
-GSEA(exprsData, labelList, geneSets, nperm, metric ,
-     dump, checkInput, doublePrecision)
+GSEA(exprsData, labelList, geneSets, nperm, metric , 
+    dump, checkInput, doublePrecision)
 ```
 
 ##  Details on local metrics
@@ -182,13 +212,13 @@ errors", Communications of the ACM 8 (1): 40, doi:10.1145/363707.363723)
 - stable_log2_ratio_of_classes
 
 ### one-pass Steiner-naive mean and stdev rankings (fastest, few patients)
-(computed with the following formula Var(X) = E(X^2)-E(X)^2)
+(computed with the following formula Var(X) = E(X*X)-E(X)*E(X))
 
 - onepass_signal2noise
 - onepass_t_test
 
 ### two-pass mean and stdev ranking (slower, more precise, best trade-off)
-(computed with the following formula Var(X) = E(X-E(X))^2)
+(computed with the following formula Var(X) = E(X-E(X))*E(X-E(X)))
 
 - twopass_signal2noise
 - twopass_t_test
@@ -206,7 +236,7 @@ Seminumerical Algorithms, 3rd edn., p. 232. Boston: Addison-Wesley.)
 - overkill_signal2noise
 - overkill_t_test
 
-## Hacking
+## Extending the code
 
 All topics in this section cover source code related issues i.e. you have to
 alter the source code and reinstall the package!
@@ -227,3 +257,4 @@ See src/include/functors.cuh and alter or define new local measures
 ### I want to know what the error codes mean
 
 See src/include/error_codes.cuh .
+

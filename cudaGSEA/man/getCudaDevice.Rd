@@ -11,6 +11,9 @@ of CUDA's cudaGetDevice method.
 getCudaDevice()
 }
 
+\value{
+An unsigned integer denoting the currently active CUDA device.
+}
 
 \examples{
 # query active device
