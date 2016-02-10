@@ -302,10 +302,10 @@ std::vector<enrch_t> gsea_proxy(std::vector<exprs_t>& exprs,
         unsigned int * Index = zeroGPU<unsigned int>(num_genes*width_pi);
 
         if (sort_direction)
-            pathway_sort<exprs_t, unsigned int, index_t, false, false>
+            pathway_sort_gpu<exprs_t, unsigned int, index_t, false>
             (Correl, OIndx, Index, num_genes, width_pi);
         else
-            pathway_sort<exprs_t, unsigned int, index_t, false, true>
+            pathway_sort_gpu<exprs_t, unsigned int, index_t, true>
             (Correl, OIndx, Index, num_genes, width_pi);
 
         // for each batch of paths
