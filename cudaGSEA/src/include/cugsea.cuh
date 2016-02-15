@@ -181,8 +181,8 @@ void compute_gsea(std::string gct_filename, // name of the expression data file
 
             // compute enrichment scores
             enrch_t * Score  = zeroGPU<enrch_t>(width_pa*width_pi);
-            compute_scores(Correl, Index, OPath, Score,
-                           num_genes, width_pi, width_pa);
+            compute_scores_gpu(Correl, Index, OPath, Score,
+                               num_genes, width_pi, width_pa);
 
             #ifdef CUDA_GSEA_PRINT_VERBOSE
             std::cout << "STATUS: free RAM on the GPU: "

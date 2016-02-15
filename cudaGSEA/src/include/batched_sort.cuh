@@ -301,10 +301,9 @@ void pathway_sort_cpu(
             const ind_t base = batch*batch_size;
 
             // auxilliary memory
-            std::vector<key_t> loc_key(Keys+base, Keys+base+batch_size);
-            std::vector<val_t> loc_val(Source, Source+batch_size);
-            std::vector<ind_t> loc_ind(batch_size);
-            std::iota(loc_ind.data(), loc_ind.data()+batch_size, 0);
+            std::vector<key_t> locKey(Keys+base, Keys+base+batch_size);
+            std::vector<ind_t> locInd(batch_size);
+            std::iota(locInd.data(), locInd.data()+batch_size, 0);
 
             // sort predicate
             auto predicate = [&] (const ind_t& lhs, const ind_t& rhs) {
@@ -315,12 +314,12 @@ void pathway_sort_cpu(
             };
 
             // sort indices
-            std::sort(loc_ind.data(), loc_ind.data()+batch_size, predicate);
+            std::sort(locInd.data(), locInd.data()+batch_size, predicate);
 
             // substitution
             for (ind_t id = 0; id < batch_size; id++) {
-                Keys  [base+id] = loc_key[loc_ind[id]];
-                Target[base+id] = loc_val[loc_ind[id]];
+                Keys  [base+id] = locKey[locInd[id]];
+                Target[base+id] = Source[locInd[id]];
             }
         }
     }
