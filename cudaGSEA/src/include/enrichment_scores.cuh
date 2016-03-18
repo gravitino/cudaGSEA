@@ -6,7 +6,7 @@
 #include "configuration.cuh"
 
 #ifdef CUDA_GSEA_OPENMP_ENABLED
-#inlcude <omp.h>
+#include <omp.h>
 #endif
 
 template<
@@ -263,9 +263,7 @@ template<
     class enrch_t,
     class index_t,
     bool transposed=false,
-    bool shared_memory=true,
-    bool kahan=true,
-    uint batch=64>
+    bool kahan=true>
 void compute_scores_cpu(
     exprs_t * Correl,    // num_perms x num_genes (constin)
     posit_t * Index,     // num_perms x num_genes (constin)
@@ -278,7 +276,7 @@ void compute_scores_cpu(
     #ifdef CUDA_GSEA_OPENMP_ENABLED
     #pragma omp parallel for
     #endif
-    for (index_t perm; perm < num_perms; perm++) {
+    for (index_t perm = 0; perm < num_perms; perm++) {
         for (index_t path = 0; path < num_paths; path++) {
 
             enrch_t Bsf = 0;
@@ -333,7 +331,7 @@ void compute_scores_cpu(
 
            // store best enrichment per path
            Score[path*num_perms+perm] = Bsf;
-    	}
+        }
     }
 }
 #endif

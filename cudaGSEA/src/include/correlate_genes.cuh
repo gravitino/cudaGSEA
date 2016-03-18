@@ -72,7 +72,7 @@ template <
     class index_t,
     class value_t,
     class funct_t,
-    unsigned int seed=CUDA_GSEA_PERMUTATION_SEED> __global__
+    unsigned int seed=CUDA_GSEA_PERMUTATION_SEED>
 void correlate_cpu(
     value_t * table,       // expression data table (constin)
     label_t * labels,      // class labels for the two phenotypes
@@ -296,6 +296,168 @@ void correllate_genes_gpu(
 
     #ifdef CUDA_GSEA_PRINT_TIMINGS
     TIMERSTOP(device_correlate_genes)
+    #endif
+}
+
+template <
+    class value_t,
+    class label_t,
+    class index_t,
+    bool biased=true,         // use biased standard deviation if applicable
+    bool fixlow=true,        // adjust low standard deviation if applicable
+    bool transposed=false>   // do not change this unless you know better
+void correllate_genes_cpu(
+    value_t * Exprs,         // expression data  (constin)
+    label_t * Labels,        // phenotype labels (constin)
+    value_t * Correl,        // correlation of genes (output)
+    index_t num_genes,       // number of genes
+    index_t num_type_A,      // number patients phenotype A
+    index_t num_type_B,      // number patients phenotype B
+    index_t num_perms,       // number of permutations
+    std::string metric,      // specify the used metric
+    index_t shift=0) {       // shift in permutations
+
+    #ifdef CUDA_GSEA_PRINT_TIMINGS
+    TIMERSTART(host_correlate_genes)
+    #endif
+
+    #ifdef CUDA_GSEA_PRINT_VERBOSE
+    std::cout << "STATUS: Correlating " << num_genes << " unique gene symbols "
+              << "for " << num_type_A << " patients" << std::endl
+              << "STATUS: with phenotype 0 and " << num_type_B
+              << " patients with phenotype 1" << std::endl
+              << "STATUS: over " << num_perms
+              << " permutations (shift=" << shift << ") " << std::endl
+              << "STATUS: using " << metric << " as ranking metric on the GPU."
+              << std::endl;
+    #endif
+
+    // consistency checks
+    assert(num_type_A > 0);
+    assert(num_type_B > 0);
+    assert(num_genes > 0);
+    assert(num_perms > 0);
+
+    // choose metric
+    if (metric == "naive_diff_of_classes") {
+        auto combiner = combine_difference();
+        auto functor  = accumulate_naive_mean
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else if (metric == "naive_ratio_of_classes") {
+        auto combiner = combine_quotient();
+        auto functor  = accumulate_naive_mean
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else if (metric == "naive_log2_ratio_of_classes") {
+        auto combiner = combine_log2_quotient();
+        auto functor  = accumulate_naive_mean
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else if (metric == "stable_diff_of_classes") {
+        auto combiner = combine_difference();
+        auto functor  = accumulate_kahan_mean
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else if (metric == "stable_ratio_of_classes") {
+        auto combiner = combine_quotient();
+        auto functor  = accumulate_kahan_mean
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else if (metric == "stable_log2_ratio_of_classes") {
+        auto combiner = combine_log2_quotient();
+        auto functor  = accumulate_kahan_mean
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else if (metric == "onepass_signal2noise") {
+        auto combiner = combine_signal2noise<fixlow>();
+        auto functor  = accumulate_onepass_stats
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else if (metric == "onepass_t_test") {
+        auto combiner = combine_T_test<fixlow>();
+        auto functor  = accumulate_onepass_stats
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else if (metric == "twopass_signal2noise") {
+        auto combiner = combine_signal2noise<fixlow>();
+        auto functor  = accumulate_twopass_stats
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else if (metric == "twopass_t_test") {
+        auto combiner = combine_T_test<fixlow>();
+        auto functor  = accumulate_twopass_stats
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else if (metric == "stable_signal2noise") {
+        auto combiner = combine_signal2noise<fixlow>();
+        auto functor  = accumulate_knuth_stats
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else if (metric == "stable_t_test") {
+        auto combiner = combine_T_test<fixlow>();
+        auto functor  = accumulate_knuth_stats
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else if (metric == "overkill_signal2noise") {
+        auto combiner = combine_signal2noise<fixlow>();
+        auto functor  = accumulate_overkill_stats
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else if (metric == "overkill_t_test") {
+        auto combiner = combine_T_test<fixlow>();
+        auto functor  = accumulate_overkill_stats
+                        <decltype(combiner), transposed>(combiner);
+        correlate_cpu<label_t>
+                     (Exprs, Labels, Correl, num_genes, num_type_A,
+                      num_type_B, num_perms, functor, shift);             CUERR
+
+    } else {
+        std::cout << "ERROR: unknown metric, exiting." << std::endl;
+        exit(CUDA_GSEA_NO_KNOWN_METRIC_SPECIFIED_ERROR);
+    }
+
+    #ifdef CUDA_GSEA_PRINT_TIMINGS
+    TIMERSTOP(host_correlate_genes)
     #endif
 }
 

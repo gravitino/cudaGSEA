@@ -1,5 +1,5 @@
-#include "include/cugsea.cuh"                 // everything will work fine
-#include "include/parse_cmd_line.cuh"         // parse command line options
+#include "include/cugsea.cuh"                    // everything will work fine
+#include "include/cmdparser/parse_cmd_line.hpp"  // parse command line options
 
 void print_help() {
     auto errcode = system("cat HELP.txt");
@@ -15,7 +15,10 @@ int main (int argc, char * argv[]) {
         return 1;
     } else {
 
-        // parse options
+        ///////////////////////////////////////////////////////////////////////
+        // checking flags
+        ///////////////////////////////////////////////////////////////////////
+
         auto is_res = cmd_option_exists(argv, argv+argc, "-res");
         auto is_cls = cmd_option_exists(argv, argv+argc, "-cls");
         auto is_gmx = cmd_option_exists(argv, argv+argc, "-gmx");
@@ -25,6 +28,11 @@ int main (int argc, char * argv[]) {
         auto is_dmp = cmd_option_exists(argv, argv+argc, "-dump");
         auto is_prc = cmd_option_exists(argv, argv+argc, "-precision");
         auto is_gpu = cmd_option_exists(argv, argv+argc, "-gpu");
+        auto is_cpu = cmd_option_exists(argv, argv+argc, "-cpu");
+
+        ///////////////////////////////////////////////////////////////////////
+        // parsing flag options
+        ///////////////////////////////////////////////////////////////////////
 
         // check for mandatory parameters
         if (!is_res) {
@@ -131,6 +139,11 @@ int main (int argc, char * argv[]) {
             auto identifier = get_cmd_option(argv, argv + argc, "-gpu");
             if (check_number(identifier)) {
                 device_id = to_number(identifier);
+
+                // reset the CUDA device
+                cudaSetDevice(device_id);
+                cudaDeviceReset();
+
             } else {
                 std::cout << "ERROR: number specified with -gpu could not "
                           << "be parsed as integer. Exiting." << std::endl;
@@ -138,71 +151,41 @@ int main (int argc, char * argv[]) {
             }
         }
 
+        if (is_gpu && is_cpu) {
+            std::cout << "ERROR: you can only specify -cpu if -gpu is not "
+                      << "already set. Exiting." << std::endl;
+            exit(CUDA_GSEA_GPU_AND_CPU_SET_ERROR);
+        }
 
-        /*
-        std::cout << gct_file << std::endl;
-        std::cout << cls_file << std::endl;
-        std::cout << gmt_file << std::endl;
-        std::cout << nperm << std::endl;
-        std::cout << metric << std::endl;
-        std::cout << sort_direction << std::endl;
-        std::cout << dump_filename << std::endl;
-        std::cout << single_precision << std::endl;
-        std::cout << device_id << std::endl;
-        */
-
-        // reset the CUDA device
-        cudaSetDevice(device_id);
-        cudaDeviceReset();
+        ///////////////////////////////////////////////////////////////////////
+        // the calls
+        ///////////////////////////////////////////////////////////////////////
 
         TIMERSTART(overall)
 
-        if (single_precision) {
-            compute_gsea<float, size_t, unsigned char, bitmap32_t, float>
-                        (gct_file, cls_file, gmt_file ,
-                         metric, nperm, sort_direction, false, dump_filename);
-        } else {
-            compute_gsea<double, size_t, unsigned char, bitmap64_t, double>
-                        (gct_file, cls_file, gmt_file ,
-                         metric, nperm, sort_direction, false, dump_filename);
-        }
+        // set types for indexing and labelling
+        typedef size_t index_t;
+        typedef unsigned char label_t;
+
+        if (single_precision)
+            if (is_cpu)
+                compute_gsea_cpu<float, index_t, label_t, bitmap32_t, float>
+                                (gct_file, cls_file, gmt_file, metric, nperm,
+                                 sort_direction, false, dump_filename);
+            else
+                compute_gsea_gpu<float, index_t, label_t, bitmap32_t, float>
+                                (gct_file, cls_file, gmt_file, metric, nperm,
+                                 sort_direction, false, dump_filename);
+        else
+            if (is_cpu)
+                compute_gsea_cpu<double, index_t, label_t, bitmap64_t, double>
+                                (gct_file, cls_file, gmt_file, metric, nperm,
+                                 sort_direction, false, dump_filename);
+            else
+                compute_gsea_gpu<double, index_t, label_t, bitmap64_t, double>
+                                (gct_file, cls_file, gmt_file, metric, nperm,
+                                 sort_direction, false, dump_filename);
 
         TIMERSTOP(overall)
     }
 }
-
-
-/*
-int main (int argc, char * argv[]) {
-
-    // Hello!
-    print_welcome();
-
-
-    // first of all we configure the used data types
-    // see "include/configuration.cuh" to alter print settings
-    typedef float exprs_t;         // data type for expression data
-    typedef size_t index_t;        // data type for indexing
-    typedef unsigned char label_t; // data type for storing labels, don't alter
-    typedef bitmap64_t bitmp_t;    // data type for storing pathways
-    typedef float enrch_t;         // data type for enrichment scores
-
-
-    // reset the CUDA device
-    cudaSetDevice(CUDA_DEVICE_ID);
-    cudaDeviceReset();
-
-
-    TIMERSTART(overall)
-    // compute gene set enrichment for a given problem
-    compute_gsea<exprs_t, index_t, label_t, bitmp_t, enrch_t> // data types
-                ("../../../cugsea/data/GSE19429/GSE19429_series.gct",         // gct file
-                 "../../../cugsea/data/GSE19429/GSE19429_series.cls",         // cls file
-                 //"data/Pathways/c2.all.v5.0.symbols.gmt",     // gmt file
-                 "../../../cugsea/data/Pathways/h.all.v5.0.symbols.gmt",     // gmt file
-                 "onepass_signal2noise", 1<<14,
-                 true, false, "/tmp/score");          // metric, perms
-    TIMERSTOP(overall)
-
-}
-*/

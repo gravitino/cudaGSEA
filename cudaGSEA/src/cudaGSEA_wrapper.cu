@@ -142,15 +142,16 @@ int setCudaDevice_proxy(int id) {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <class index_t>
-void print_gsea_info_helper(index_t num_patients,
-                            index_t num_type_A,
-                            index_t num_type_B,
-                            index_t num_genes,
-                            index_t num_paths,
-                            index_t num_perms,
-                            std::string metric,
-                            bool sort_direction,
-                            bool swap_labels) {
+void print_gsea_info_helper(
+    index_t num_patients,
+    index_t num_type_A,
+    index_t num_type_B,
+    index_t num_genes,
+    index_t num_paths,
+    index_t num_perms,
+    std::string metric,
+    bool sort_direction,
+    bool swap_labels) {
 
     // a fancy bar suddenly appears in the wild:
     std::string bar = "===================";
@@ -169,22 +170,24 @@ void print_gsea_info_helper(index_t num_patients,
 
 }
 
-template <class exprs_t,                     // data type for expression data
-          class index_t,                     // data type for indexing
-          class label_t,                     // data type for storing labels
-          class bitmp_t,                     // data type for storing pathways
-          class enrch_t> __host__            // data type for enrichment scores
-std::vector<enrch_t> gsea_proxy(std::vector<exprs_t>& exprs,
-                                std::vector<std::string>& gsymb,
-                                std::vector<std::string>& plist,
-                                std::vector<label_t>& labels,
-                                std::vector<std::string>& pname,
-                                std::vector<std::vector<std::string>>& pathw,
-                                std::string metric,
-                                index_t num_perms,
-                                bool sort_direction,
-                                bool swap_labels,
-                                std::string dump_filename) {
+template <
+    class exprs_t,                     // data type for expression data
+    class index_t,                     // data type for indexing
+    class label_t,                     // data type for storing labels
+    class bitmp_t,                     // data type for storing pathways
+    class enrch_t> __host__            // data type for enrichment scores
+std::vector<enrch_t> gsea_proxy(
+    std::vector<exprs_t>& exprs,
+    std::vector<std::string>& gsymb,
+    std::vector<std::string>& plist,
+    std::vector<label_t>& labels,
+    std::vector<std::string>& pname,
+    std::vector<std::vector<std::string>>& pathw,
+    std::string metric,
+    index_t num_perms,
+    bool sort_direction,
+    bool swap_labels,
+    std::string dump_filename) {
 
     // make sure the user does not use bool as label_t to avoid problems
     static_assert(!std::is_same<label_t, bool>::value,
@@ -275,10 +278,10 @@ std::vector<enrch_t> gsea_proxy(std::vector<exprs_t>& exprs,
     // schedule computation
     index_t batch_size_perms = 0, num_batches_perms = 0,
             batch_size_paths = 0, num_batches_paths = 0, num_free_bytes = 0;
-    schedule_computation<exprs_t, bitmp_t, enrch_t>
-                        (num_genes, num_perms, num_paths,
-                         batch_size_perms, num_batches_perms,
-                         batch_size_paths, num_batches_paths, num_free_bytes);
+    schedule_computation_gpu<exprs_t, bitmp_t, enrch_t>
+                            (num_genes, num_perms, num_paths,batch_size_perms,
+                             num_batches_perms, batch_size_paths,
+                             num_batches_paths, num_free_bytes);
 
     #ifdef CUDA_GSEA_PRINT_INFO
     print_scheduler_info(batch_size_perms, num_batches_perms,
@@ -397,34 +400,36 @@ std::vector<enrch_t> gsea_proxy(std::vector<exprs_t>& exprs,
     return final_statistics(global_result, num_paths, num_perms);
 }
 
-std::vector<float> gsea_single_proxy(std::vector<float>& exprs,
-                                     std::vector<std::string>& gsymb,
-                                     std::vector<std::string>& plist,
-                                     std::vector<char>& labels,
-                                     std::vector<std::string>& pname,
-                                     std::vector<std::vector<std::string>>& pathw,
-                                     std::string metric,
-                                     size_t num_perms,
-                                     bool sort_direction,
-                                     bool swap_labels,
-                                     std::string dump_filename) {
+std::vector<float> gsea_single_proxy(
+    std::vector<float>& exprs,
+    std::vector<std::string>& gsymb,
+    std::vector<std::string>& plist,
+    std::vector<char>& labels,
+    std::vector<std::string>& pname,
+    std::vector<std::vector<std::string>>& pathw,
+    std::string metric,
+    size_t num_perms,
+    bool sort_direction,
+    bool swap_labels,
+    std::string dump_filename) {
 
     return gsea_proxy<float, size_t, char, bitmap32_t, float>
           (exprs, gsymb, plist, labels, pname, pathw,
            metric, num_perms, sort_direction, swap_labels, dump_filename);
 }
 
-std::vector<double> gsea_double_proxy(std::vector<double>& exprs,
-                                      std::vector<std::string>& gsymb,
-                                      std::vector<std::string>& plist,
-                                      std::vector<char>& labels,
-                                      std::vector<std::string>& pname,
-                                      std::vector<std::vector<std::string>>& pathw,
-                                      std::string metric,
-                                      size_t num_perms,
-                                      bool sort_direction,
-                                      bool swap_labels,
-                                      std::string dump_filename) {
+std::vector<double> gsea_double_proxy(
+    std::vector<double>& exprs,
+    std::vector<std::string>& gsymb,
+    std::vector<std::string>& plist,
+    std::vector<char>& labels,
+    std::vector<std::string>& pname,
+    std::vector<std::vector<std::string>>& pathw,
+    std::string metric,
+    size_t num_perms,
+    bool sort_direction,
+    bool swap_labels,
+    std::string dump_filename) {
 
     return gsea_proxy<double, size_t, char, bitmap64_t, double>
           (exprs, gsymb, plist, labels, pname, pathw,

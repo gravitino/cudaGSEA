@@ -1,5 +1,5 @@
-#ifndef CUDA_GSEA_PARSE_CMD_LINE_CUH
-#define CUDA_GSEA_PARSE_CMD_LINE_CUH
+#ifndef PARSE_CMD_LINE_HPP
+#define PARSE_CMD_LINE_HPP
 
 #include <string>
 #include <sstream>

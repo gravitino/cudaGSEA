@@ -31,13 +31,13 @@ struct combine_log2_quotient {
 template <bool fixlow=true>
 struct combine_signal2noise {
     template <class value_t, class index_t> __host__ __device__ __forceinline__
-    value_t operator()(const value_t& mean_A, 
+    value_t operator()(const value_t& mean_A,
                        const value_t& var_A,
                        const index_t& num_type_A,
-                       const value_t& mean_B, 
+                       const value_t& mean_B,
                        const value_t& var_B,
                        const index_t& num_type_B) const {
-            
+
         if (!fixlow) {
             return (mean_A-mean_B)/(cusqrt(var_A)+cusqrt(var_B));
         } else {
@@ -57,10 +57,10 @@ struct combine_signal2noise {
 template <bool fixlow=true>
 struct combine_T_test {
     template <class value_t, class index_t> __host__ __device__ __forceinline__
-    value_t operator()(const value_t& mean_A, 
+    value_t operator()(const value_t& mean_A,
                        const value_t& var_A,
                        const index_t& num_type_A,
-                       const value_t& mean_B, 
+                       const value_t& mean_B,
                        const value_t& var_B,
                        const index_t& num_type_B) const {
 
@@ -89,10 +89,10 @@ struct accumulate_naive_mean {
 
     const funct_t combine;
 
-    __host__ __device__ 
+    __host__ __device__
     accumulate_naive_mean(funct_t combine_) : combine(combine_) {}
 
-    template <class label_t, class index_t, class value_t> 
+    template <class label_t, class index_t, class value_t>
     __host__ __device__ __forceinline__
     value_t operator()(label_t * labels,
                        value_t * table,
@@ -101,7 +101,7 @@ struct accumulate_naive_mean {
                        index_t num_genes,
                        index_t num_type_A,
                        index_t num_type_B) {
-    
+
         // compute mean of phenotypes using naive sum
         value_t mean_A = 0, mean_B = 0;
         for (index_t id = 0; id < lane; id++) {
@@ -128,10 +128,10 @@ struct accumulate_kahan_mean {
 
     const funct_t combine;
 
-    __host__ __device__ 
+    __host__ __device__
     accumulate_kahan_mean(funct_t combine_) : combine(combine_) {}
 
-    template <class label_t, class index_t, class value_t> 
+    template <class label_t, class index_t, class value_t>
     __host__ __device__ __forceinline__
     value_t operator()(label_t * labels,
                        value_t * table,
@@ -140,7 +140,7 @@ struct accumulate_kahan_mean {
                        index_t num_genes,
                        index_t num_type_A,
                        index_t num_type_B) {
-    
+
         // compute mean of phenotypes using Kahan stable sum
         value_t mean_A = 0, mean_B = 0, kahan_A = 0, kahan_B = 0;
         for (index_t id = 0; id < lane; id++) {
@@ -166,7 +166,7 @@ struct accumulate_kahan_mean {
             // mean_A +=  label*value;
             // mean_B += !label*value;
         }
-        
+
 
         mean_A /= num_type_A;
         mean_B /= num_type_B;
@@ -175,15 +175,15 @@ struct accumulate_kahan_mean {
     }
 };
 
-template <class funct_t, bool biased=true, bool transposed=true>
+template <class funct_t, bool transposed=true, bool biased=true>
 struct accumulate_onepass_stats {
 
     const funct_t combine;
 
-    __host__ __device__ 
+    __host__ __device__
     accumulate_onepass_stats(funct_t combine_) : combine(combine_) {}
 
-    template <class label_t, class index_t, class value_t> 
+    template <class label_t, class index_t, class value_t>
     __host__ __device__ __forceinline__
     value_t operator()(label_t * labels,
                        value_t * table,
@@ -192,7 +192,7 @@ struct accumulate_onepass_stats {
                        index_t num_genes,
                        index_t num_type_A,
                        index_t num_type_B) {
-    
+
         // compute mean and variance of phenotypes using naive sum
         value_t mean_A = 0, mean_B = 0 , var_A = 0, var_B = 0;
         for (index_t id = 0; id < lane; id++) {
@@ -217,27 +217,27 @@ struct accumulate_onepass_stats {
             var_A = var_A/num_type_A - mean_A*mean_A;
             var_B = var_B/num_type_B - mean_B*mean_B;
         } else {
-            var_A = var_A/(num_type_A-1) - 
+            var_A = var_A/(num_type_A-1) -
                     mean_A*mean_A*num_type_A/(num_type_A-1);
-            var_B = var_B/(num_type_B-1) - 
+            var_B = var_B/(num_type_B-1) -
                     mean_B*mean_B*num_type_B/(num_type_B-1);
         }
 
-        return combine(mean_A, var_A, num_type_A, 
+        return combine(mean_A, var_A, num_type_A,
                        mean_B, var_B, num_type_B);
     }
 };
 
 
-template <class funct_t, bool biased=true, bool transposed=true>
+template <class funct_t, bool transposed=true, bool biased=true>
 struct accumulate_twopass_stats {
 
     const funct_t combine;
 
-    __host__ __device__ 
+    __host__ __device__
     accumulate_twopass_stats(funct_t combine_) : combine(combine_) {}
 
-    template <class label_t, class index_t, class value_t> 
+    template <class label_t, class index_t, class value_t>
     __host__ __device__ __forceinline__
     value_t operator()(label_t * labels,
                        value_t * table,
@@ -246,7 +246,7 @@ struct accumulate_twopass_stats {
                        index_t num_genes,
                        index_t num_type_A,
                        index_t num_type_B) {
-    
+
         // compute mean of phenotypes using naive sum
         value_t mean_A = 0, mean_B = 0;
         for (index_t id = 0; id < lane; id++) {
@@ -263,7 +263,7 @@ struct accumulate_twopass_stats {
             // mean_A +=  label*value;
             // mean_B += !label*value;
         }
-        
+
         mean_A /= num_type_A;
         mean_B /= num_type_B;
 
@@ -289,21 +289,21 @@ struct accumulate_twopass_stats {
             var_B = var_B/(num_type_B-1);
         }
 
-        return combine(mean_A, var_A, num_type_A, 
+        return combine(mean_A, var_A, num_type_A,
                        mean_B, var_B, num_type_B);
     }
 };
 
 // http://i.stanford.edu/pub/cstr/reports/cs/tr/79/773/CS-TR-79-773.pdf
-template <class funct_t, bool biased=true, bool transposed=true>
+template <class funct_t, bool transposed=true, bool biased=true>
 struct accumulate_overkill_stats {
 
     const funct_t combine;
 
-    __host__ __device__ 
+    __host__ __device__
     accumulate_overkill_stats(funct_t combine_) : combine(combine_) {}
 
-    template <class label_t, class index_t, class value_t> 
+    template <class label_t, class index_t, class value_t>
     __host__ __device__ __forceinline__
     value_t operator()(label_t * labels,
                        value_t * table,
@@ -312,7 +312,7 @@ struct accumulate_overkill_stats {
                        index_t num_genes,
                        index_t num_type_A,
                        index_t num_type_B) {
-    
+
         // compute mean of phenotypes using Kahan stable sum
         value_t mean_A = 0, mean_B = 0, kahan_A = 0, kahan_B = 0;
         for (index_t id = 0; id < lane; id++) {
@@ -338,7 +338,7 @@ struct accumulate_overkill_stats {
             // mean_A +=  label*value;
             // mean_B += !label*value;
         }
-        
+
         mean_A /= num_type_A;
         mean_B /= num_type_B;
 
@@ -369,20 +369,20 @@ struct accumulate_overkill_stats {
             var_B = var_B/(num_type_B-1);
         }
 
-        return combine(mean_A, var_A, num_type_A, 
+        return combine(mean_A, var_A, num_type_A,
                        mean_B, var_B, num_type_B);
     }
 };
 
-template <class funct_t, bool biased=true, bool transposed=true>
+template <class funct_t, bool transposed=true, bool biased=true>
 struct accumulate_knuth_stats {
 
     const funct_t combine;
 
-    __host__ __device__ 
+    __host__ __device__
     accumulate_knuth_stats(funct_t combine_) : combine(combine_) {}
 
-    template <class label_t, class index_t, class value_t> 
+    template <class label_t, class index_t, class value_t>
     __host__ __device__ __forceinline__
     value_t operator()(label_t * labels,
                        value_t * table,
@@ -391,7 +391,7 @@ struct accumulate_knuth_stats {
                        index_t num_genes,
                        index_t num_type_A,
                        index_t num_type_B) {
-    
+
         // compute mean and variance of phenotypes using naive sum
         value_t mean_A = 0, mean_B = 0 , var_A = 0, var_B = 0;
         index_t iter_A = 0, iter_B = 0;
@@ -427,7 +427,7 @@ struct accumulate_knuth_stats {
             var_B = var_B/(num_type_B-1);
         }
 
-        return combine(mean_A, var_A, num_type_A, 
+        return combine(mean_A, var_A, num_type_A,
                        mean_B, var_B, num_type_B);
     }
 };

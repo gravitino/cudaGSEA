@@ -2,7 +2,8 @@
 CXX=g++
 CXXFLAGS=-O3 -march=native -fPIC
 NVCC=nvcc
-NVCCFLAGS=-arch=sm_35 -O3 -std=c++11 -gencode arch=compute_30,code=compute_30 \
+NVCCFLAGS=-arch=sm_35 -O3 -std=c++11 -gencode arch=compute_20,code=compute_20 \
+                                     -gencode arch=compute_30,code=compute_30 \
                                      -gencode arch=compute_35,code=compute_35 \
                                      -gencode arch=compute_52,code=compute_52
 
@@ -29,7 +30,7 @@ print_path_info:
 	@echo -e 'INFO: path to Rcpp.h: \t RCPP_INC=$(RCPP_INC)'
 	@echo -e 'INFO:                                                            '
 	@echo -e 'INFO: If these are not your desired paths, please alter the      '
-	@echo -e 'INFO: global environment variables CUDA_HOME, R_INC AND RCPP_INC.'
+	@echo -e 'INFO: global environment variables CUDA_HOME, R_INC and RCPP_INC.'
 	@echo -e 'INFO: ==========================================================='
 
 cudaGSEA.so: $(OBJECTS)
@@ -42,7 +43,7 @@ cudaGSEA_wrapper_cpp.o: cudaGSEA_wrapper.cpp cudaGSEA_wrapper.cuh
 	$(CXX) $(CXXFLAGS) cudaGSEA_wrapper.cpp -c -lR -I $(R_INC) -I $(RCPP_INC) -std=c++11 -o cudaGSEA_wrapper_cpp.o
 
 cudaGSEA: cudaGSEA.cu
-	$(CUDA_HOME)/bin/$(NVCC) $(NVCCFLAGS) cudaGSEA.cu -o cudaGSEA
+	$(CUDA_HOME)/bin/$(NVCC) $(NVCCFLAGS) cudaGSEA.cu -o cudaGSEA -Xcompiler="-fopenmp -DCUDA_GSEA_OPENMP_ENABLED"
 
 clean:
-	rm -rf $(OBJECTS) cudaGSEA.so cudaGSEA *~
+	rm -rf $(OBJECTS) cudaGSEA.so cudaGSEA *~ include/*~

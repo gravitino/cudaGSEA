@@ -21,6 +21,6 @@
 #define CUDA_GSEA_INVALID_ORDER_SPECIFIED_ERROR                   (18)
 #define CUDA_GSEA_EMPTY_DUMP_FILE_NAME_ERROR                      (19)
 #define CUDA_GSEA_INVALID_PRECISION_SPECIFIED_ERROR               (20)
-
+#define CUDA_GSEA_GPU_AND_CPU_SET_ERROR                           (22)
 
 #endif
