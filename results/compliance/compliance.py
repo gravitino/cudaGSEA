@@ -1,6 +1,12 @@
 import numpy as np
 import pylab as pl
 
+try:
+    import seaborn
+    seaborn.set_style("whitegrid")
+except:
+    pass
+
 # ES scores ES(S, e) obtained on hallmark (50 gene sets) using "difference of 
 # classes" as local deviation measure on a Titan X (single), Tesla K40 (double)
 # and Broad GSEA
@@ -51,11 +57,19 @@ broad =  [-0.58909976,     -0.59250164,     -0.56099695,     -0.43695688,
 single, double, broad = np.array(single), np.array(double), np.array(broad)
 
 pl.subplot(121)
+pl.title("FP32 rapidGSEA to broadGSEA")
 pl.hist(single-broad)
+pl.xlabel("difference in enrichment scores")
+pl.ylabel("count")
+
 pl.subplot(122)
+pl.title("FP64 rapidGSEA to broadGSEA")
 pl.hist(double-broad)
+pl.xlabel("difference in enrichment scores")
 
 print np.mean(single-broad), np.std(single-broad), np.max(abs(single-broad))
 print np.mean(double-broad), np.std(double-broad), np.max(abs(double-broad))
 
+pl.savefig("images/scores_differences.pdf", dpi=300)
+pl.savefig("images/scores_differences.png", dpi=300)
 pl.show()
