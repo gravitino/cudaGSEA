@@ -21,6 +21,7 @@
 #include <omp.h>
 #endif
 
+#include <numeric>
 
 #ifdef UNIT_TEST
 // error makro
