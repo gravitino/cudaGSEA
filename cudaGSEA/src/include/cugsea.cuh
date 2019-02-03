@@ -252,6 +252,7 @@ void compute_gsea_gpu(
                   << " NES: "  << result[1*num_paths+path]
                   << " NP: "   << result[2*num_paths+path]
                   << " FWER: " << result[3*num_paths+path]
+                  << " FDR: "  << result[4*num_paths+path]
                   << "\t(" << pname[path] << ")" << std::endl;
     }
 
@@ -440,6 +441,7 @@ void compute_gsea_cpu(
                   << " NES: "  << result[1*num_paths+path]
                   << " NP: "   << result[2*num_paths+path]
                   << " FWER: " << result[3*num_paths+path]
+                  << " FDR: " <<  result[4*num_paths+path]
                   << "\t(" << pname[path] << ")" << std::endl;
     }
 

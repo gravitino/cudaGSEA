@@ -56,7 +56,7 @@ std::vector<enrch_t> final_statistics(std::vector<enrch_t>& enrchScores,
     for (index_t path = 0; path < num_paths; path++)
         result[path] = enrchScores[path*num_perms];
 
-    // now compute the normalized enrichtment score for each path
+    // now compute the normalized enrichment score for each path
     for (index_t path = 0; path < num_paths; path++) {
         enrch_t sum = 0;
         // TODO: maybe make this Kahan stable
@@ -109,9 +109,40 @@ std::vector<enrch_t> final_statistics(std::vector<enrch_t>& enrchScores,
         result[3*num_paths+path] = p_value/num_perms;
     }
 
-    // FDR-Q still missing
-    for (index_t path = 0; path < num_paths; path++)
-        result[4*num_paths+path] = std::numeric_limits<enrch_t>::quiet_NaN();
+    // FDR-Q
+    for (index_t path = 0; path < num_paths; path++) {
+        // normalized enrichment score
+        enrch_t score = result[num_paths+path];
+        enrch_t more_extreme_observed = 0;
+        enrch_t more_extreme_random = 0;
+
+        for (index_t other = 0; other < num_paths; other++) {
+            if (path == other)
+                continue;
+
+            if (score == 0) {
+                continue;
+            }
+            else if (score > 0) {
+                more_extreme_random += pos_tail_count(&enrchScores[other*num_perms], num_perms, score);
+                if (result[num_paths+other] >= score)
+                    more_extreme_observed += 1;
+            }
+            else {
+                more_extreme_random += neg_tail_count(&enrchScores[other*num_perms], num_perms, score);
+                if (result[num_paths+other] <= score)
+                    more_extreme_observed += 1;
+            }
+
+        }
+        enrch_t nominator = more_extreme_random / ((num_paths - 1) * num_perms);
+        enrch_t denominator = more_extreme_observed / (num_paths - 1);
+
+        if (denominator == 0)
+            result[4*num_paths+path] = 0;
+        else
+            result[4*num_paths+path] = nominator / denominator;
+    }
 
     return result;
 }
