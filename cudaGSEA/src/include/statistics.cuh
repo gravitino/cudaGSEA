@@ -109,7 +109,11 @@ std::vector<enrch_t> final_statistics(std::vector<enrch_t>& enrchScores,
         result[3*num_paths+path] = p_value/num_perms;
     }
 
-    // FDR-Q
+    // FDR-Q: computed for all scores. Please note that GSEADesktop:
+    //  - calculates FDR per positive / negative scores separately,
+    //  - has some kind of a procedure designed for "skewed FDR"
+    // and while the code below does not attempt to reproduce GSEADesktop
+    // behaviour, it produces not much different scores.
     for (index_t path = 0; path < num_paths; path++) {
         // normalized enrichment score
         enrch_t score = result[num_paths+path];
