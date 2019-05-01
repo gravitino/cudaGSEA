@@ -191,7 +191,7 @@ RcppExport SEXP GSEA(SEXP exprsData,
             auto minimum = +std::numeric_limits<proxy_value_t>::infinity();
 
             for (const auto& value : exprs_table) {
-                if(isnan(value)) {
+                if(std::isnan(value)) {
                     std::cout << "INVALID DATA: expression table has NaN "
                               << "entries that cannot be handled by the GSEA "
                               << "algorithm." << std::endl;
